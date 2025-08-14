@@ -5,6 +5,7 @@ mod types;
 use warp::Filter;
 use std::sync::{Arc, Mutex};
 use bytes::Bytes;
+use bytes::Buf;
 use std::collections::HashMap;
 use filters::*;
 use rate_limit::rate_limit;
@@ -60,7 +61,7 @@ async fn main() {
         .allow_methods(&[Method::POST])
         .allow_headers(vec!["content-type", "evil", "x-csrf-token"]);
 
-    // General filter for text-based attacks
+
     let filters = warp::any()
         .and(warp::body::bytes())
         .and(warp::header::headers_cloned())
@@ -93,7 +94,7 @@ async fn main() {
             })
         });
 
-    // Dedicated file upload route
+    
     let upload = warp::path("upload")
         .and(warp::multipart::form())
         .and(warp::header::headers_cloned())
@@ -101,14 +102,12 @@ async fn main() {
         .and(rate_limiter_filter)
         .and_then(|mut form: warp::multipart::FormData, headers: warp::http::HeaderMap, addr: Option<std::net::SocketAddr>, rate_limiter| async move {
             let ip = addr.map(|a| a.ip().to_string()).unwrap_or_default();
-            let headers_map = headers.iter().map(|(k, v)| (k.as_str(), v.to_str().unwrap_or(""))).collect::<HashMap<_, _>>();
             let mut reason = None;
             let mut file_name = String::new();
             let mut file_bytes = Vec::new();
             while let Some(part) = form.try_next().await.unwrap_or(None) {
                 if part.name() == "file" {
                     file_name = part.filename().unwrap_or("").to_string();
-                    // Collect file bytes from stream, converting Buf to &[u8]
                     file_bytes = part.stream()
                         .try_fold(Vec::new(), |mut acc, mut chunk| async move {
                             acc.extend_from_slice(chunk.copy_to_bytes(chunk.remaining()).as_ref());
@@ -117,7 +116,7 @@ async fn main() {
                         .await
                         .unwrap_or_default();
                 }
-            }
+            }    
             if contains_malicious_file(&file_name) || contains_malicious_file_bytes(&file_bytes) {
                 reason = Some("Malicious File Upload");
             } else if !rate_limit(&rate_limiter, &ip) {

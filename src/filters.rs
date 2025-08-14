@@ -34,13 +34,14 @@ pub fn contains_path_traversal(input: &str) -> bool {
 }
 
 pub fn contains_malicious_file(input: &str) -> bool {
-    let patterns = [r"\.exe$", r"\.bat$", r"\.sh$", r"\.php$", r"\.js$", r"\.jar$", r"\.py$"];
+    // Only block executable/script extensions, allow common docs
+    let patterns = [r"\.exe$", r"\.bat$", r"\.sh$", r"\.php$", r"\.js$", r"\.jar$", r"\.py$", r"\.com$", r"\.scr$", r"\.msi$", r"\.vbs$", r"\.ps1$"];
     patterns.iter().any(|pat| Regex::new(pat).unwrap().is_match(input))
 }
 
 pub fn contains_malicious_file_bytes(bytes: &[u8]) -> bool {
-    // Example: block Windows executables (MZ header), ELF, and scripts
-    bytes.starts_with(b"MZ") || bytes.starts_with(b"\x7FELF") || bytes.starts_with(b"#!/")
+    
+    bytes.starts_with(b"MZ") || bytes.starts_with(b"\x7FELF") || bytes.starts_with(b"#!/bin/bash") || bytes.starts_with(b"#!/usr/bin/env python")
 }
 
 pub fn contains_header_attack(headers: &HashMap<&str, &str>) -> bool {

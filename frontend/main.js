@@ -30,11 +30,11 @@ document.getElementById("file-form").onsubmit = e => {
     const file = fileInput.files[0];
     if (!file) {
         document.getElementById("file-result").innerHTML = "<span class='text-danger'>No file selected.</span>";
-        return;
+        return
     }
     const formData = new FormData();
     formData.append("file", file);
-    fetch("http://127.0.0.1:8080", {
+    fetch("http://127.0.0.1:8080/upload", {
         method: "POST",
         body: formData
     })
