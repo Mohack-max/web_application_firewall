@@ -1,0 +1,1 @@
+This project is all about creating a strong web application firewall also called(WAF) in rust by implementing some set of rules that check the diffrent types of attack and especially the attacks in the OSI Top 10;
