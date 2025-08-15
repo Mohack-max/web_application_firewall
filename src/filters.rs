@@ -34,7 +34,7 @@ pub fn contains_path_traversal(input: &str) -> bool {
 }
 
 pub fn contains_malicious_file(input: &str) -> bool {
-    // Only block executable/script extensions, allow common docs
+    
     let patterns = [r"\.exe$", r"\.bat$", r"\.sh$", r"\.php$", r"\.js$", r"\.jar$", r"\.py$", r"\.com$", r"\.scr$", r"\.msi$", r"\.vbs$", r"\.ps1$"];
     patterns.iter().any(|pat| Regex::new(pat).unwrap().is_match(input))
 }
